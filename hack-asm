@@ -1,0 +1,89 @@
+;;;  COMPILER for Hack-asm . by Young Nester
+;;;  _______________________________________ 
+
+
+;;
+;; Here to make the *.asm clean (without no-need-blank-or-newlines)
+;;
+(setf newl #\Newline)
+(setf empty #\Space)
+
+(defun wr_char (n)
+       (write-char newl source_final)
+       (write-char n source_final))
+
+(defun rm_newl (sour)
+       (if (setf n (read-char sour nil)) 
+           (if (eq n newl) 
+                (rm_newl sour)
+                (wr_char n))))
+
+(setf source (open "/home/nester/source.asm"))
+(setf source_no_empty (open "/home/nester/source_no_empty.asm":direction :output))
+
+(loop while (setf a_char (read-char source nil)) do
+      (if (eq (eq a_char empty) nil)
+          (write-char a_char source_no_empty))
+)
+
+(close source) (close source_no_empty)
+          
+
+(setf source_no_empty (open "/home/nester/source_no_empty.asm"))
+(setf source_final (open "/home/nester/source_final.asm":direction :output))
+
+
+(loop while (setf a_char (read-char source_no_empty nil)) do
+      (if (eq a_char newl) 
+          (rm_newl source_no_empty)
+          (write-char a_char source_final)))         
+
+
+(close source) (close source_no_empty)
+
+;; Done
+;; ____________________________________________________________________
+
+
+;; Next,find out if all line wrote in good Hack-asm-grammer.
+
+;(setf OK T) ; good to be TRANSLATE,otherwise NIL (exit)
+(setf source_final (open "/home/nester/source_final.asm"))
+(setf line_num -1)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun map_A_command (l)
+       (if (eq (char l 1) #\1)
+            
+;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun map_tab_command (l)
+;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun trans_A_command (l)
+;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun trans_tab_command (l)
+;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun trans_C_command (l)
+;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(loop while (setf a_Line (read-line source_final nil)) do  ;have a line
+
+            (setf line_num (+ line_num 1))
+
+            (if (eq (char a_Line 1) @) 
+                (map_A_command a_Line)                   ;To map the XXXX to address
+                (if (eq (char a_Line 1) #\( )            ;Same thing 
+                    (map_tab_command a_Line)))))
+               
+;; Done
+;;______________________________________________________________________
+
+(loop while (set a_Line (read-line source_final nil)) do
+            (if (eq (char a_Line 1) @)
+                (trans_A_commmand a_Line)
+                (if (eq (char a_Line 1) #\( )
+                    (tans_tab_command a_Line)
+                    (tans_C_command a_Line))))                               
+;;
+;;Done
+
+
