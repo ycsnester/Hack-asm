@@ -16,7 +16,7 @@
        (if (setf n (read-char sour nil)) 
            (if (eq n newl) 
                 (rm_newl sour)
-                (wr_char n))))
+                (wr_char n)))) 
 
 (setf source (open "/home/nester/source.asm"))
 (setf source_no_empty (open "/home/nester/source_no_empty.asm":direction :output))
