@@ -1,8 +1,208 @@
 ;;;  COMPILER for Hack-asm . by Young Nester
-;;;  _______________________________________ 
+;;;  ***************************************
+
+(setf C_comp nil)
+(setf C_dest nil)
+(setf C_jump nil)
+
+(setf hack (open "/home/hack/hack":direction :output))
+
+;; write C instruction
+(defun write-C ()
+        (format hack "111~A~A~A"  C_comp C_dest C_jump)
+        (write-char newl hack)
+;        (close hack))
+         )
+;____________________________________________
+;--------------------------------------------
+
+;; Translate C instruction comp
+(defun trans_C_comp (parts)
+          (if (equal parts "0")
+              (setf C_comp "0101010")
+              (if (equal parts "1")
+                  (setf C_comp "0111111")
+                  (if (equal parts "-1")
+                      (setf C_comp "0111010")
+                      (if (equal parts "D")
+                          (setf C_comp "0001100")
+          (if (equal parts "A")
+              (setf C_comp "0110000")
+              (if (equal parts "!D")
+                  (setf C_comp "0001101")
+                  (if (equal parts "!A")
+                      (setf C_comp "0110001")
+                      (if (equal parts "-D")
+                          (setf C_comp "0000111")
+          (if (equal parts "-A")
+              (setf C_comp "0110011")
+              (if (equal parts "D+1")
+                  (setf C_comp "0011111")
+                  (if (equal parts "A+1")
+                      (setf C_comp "0110111")
+                      (if (equal parts "D-1")
+                          (setf C_comp "0001110")
+          (if (equal parts "A-1")
+              (setf C_comp "0110010")
+              (if (equal parts "D+A")
+                  (setf C_comp "0000010")
+                  (if (equal parts "D-A")
+                      (setf C_comp "0010011")
+                      (if (equal parts "A-D")
+                          (setf C_comp "0000111")
+          (if (equal parts "D&A")
+              (setf C_comp "0000000")
+              (if (equal parts "D|A")
+                  (setf C_comp "0010101")
+                  (if (equal parts "M")
+                      (setf C_comp "1110000")
+                      (if (equal parts "!M")
+                          (setf C_comp "1110001")
+          (if (equal parts "M+1")
+              (setf C_comp "1110111")
+              (if (equal parts "M-1")
+                  (setf C_comp "1110010")
+                  (if (equal parts "D+M")
+                      (setf C_comp "1000010")
+                      (if (equal parts "D-M")
+                          (setf C_comp "1010011")
+                (if (equal parts "M-D")
+                      (setf C_comp "1000111")
+                      (if (equal parts "D&M")
+                          (setf C_comp "1000000")
+                          (if (equal parts "D|A")
+                               (setf C_comp "1010101")
+                               ))))))))))))))))))))))))))))
+
+;_________________________________
+;---------------------------------
+
+;; Translate C instruction dest
+(defun trans_C_dest (parts)
+          (if (equal nil parts)
+              (setf C_dest "000")
+              (if (equal parts "M")
+                 (setf C_dest "001")
+                 (if (equal parts "D")
+                    (setf C_dest "010")
+                    (if (equal parts "MD")
+                        (setf C_dest "011")
+                        (if (equal parts "A")
+                            (setf C_dest "100") 
+                            (if (equal parts "AM")
+                                (setf C_dest "101")
+                                (if (equal parts "AD")
+                                    (setf C_dest "110")
+                                    (if (equal parts "AMD")
+                                        (setf C_dest "111"))))))))))
+;_________________________________
+;---------------------------------
+
+;; Translate C instruction jump
+(defun trans_C_jump (parts)
+          (if (equal nil parts) (setf C_jump "000")
+          (if (equal "JGT" parts) (setf C_jump "001")
+          (if (equal "JEQ" parts) (setf C_jump "010")
+          (if (equal "JGE" parts) (setf C_jump "011")
+          (if (equal "JLT" parts) (setf C_jump "100")
+          (if (equal "JNE" parts) (setf C_jump "101")
+          (if (equal "JLE" parts) (setf C_jump "110")
+          (if (equal "JMP" parts) (setf C_jump "111"))))))))))
+;________________________________
+;--------------------------------
+         
+;;find equal = position
+(defun find_eq (C_ins)
+       (setf posi 0)
+       (loop while (and (> (length C_ins) posi) (not (eq (setf cur_char (char C_ins posi)) #\=))) 
+                   do
+             (setf posi (+ posi 1)))
+       (if (eq cur_char #\=)
+           (setf eq_position posi)
+           (setf eq_position 0)))
+
+;_____________________
+;---------------------
+
+;;find semicolon ; position
+(defun find_semi (C_ins)
+       (setf posi 0)
+       (loop while  (and (> (length C_ins) posi) (not (eq (setf cur_char (char C_ins posi)) #\;)))  
+                   do
+             (setf posi (+ posi 1)))
+       (if (eq cur_char #\;)
+           (setf semi_position posi)
+           (setf semi_position 0)))
+
+;_____________________
+;---------------------
+
+;; C1: [destination=comp;jump]
+(defun C1 (eq_posi semi_posi C_ins)
+       (setf destination (substring C_ins 0 eq_posi)) 
+       (setf comp (substring C_ins (+ eq_posi 1) semi_posi))
+       (setf jump (substring C_ins (+ semi_posi 1) (length C_ins)))
+       (trans_C_dest destination)
+       (trans_C_comp comp) 
+       (trans_C_jump jump)
+       (write-C))      
+;____________________________________________
+;--------------------------------------------
+;; C2: [destination=comp]
+(defun C2 (eq_posi C_ins)
+       (setf destination (substring C_ins 0 eq_posi)) 
+       (setf comp (substring C_ins (+ eq_posi 1) (length C_ins)))
+       (trans_C_dest destination)
+       (trans_C_comp comp) 
+       (trans_C_jump nil)
+       (write-C))      
+
+;____________________________________________
+;--------------------------------------------
+
+;; C3: [comp;jump]
+(defun C3 (semi_posi C_ins)
+       (setf comp (substring C_ins 0 semi_posi)) 
+       (setf jump (substring C_ins (+ semi_posi 1) (length C_ins)))
+       (trans_C_dest nil)
+       (trans_C_comp comp) 
+       (trans_C_jump jump)
+       (write-C))      
+
+;____________________________________________
+;--------------------------------------------
 
 
-;;
+;; A instruction, @xxxxxxxxxx.
+(defun deal_A_ins (A_ins)
+        (setf A_val (parse-integer (substring A_ins 1)))
+        (setf A_res (write-to-string A_val :base 2))
+        (setf A_left_0 (- 16 (length A_res)))
+;        (setf hack (open "/home/hack/hack":direction :output :append))
+        (loop while (> A_left_0 0) do
+               (write-char #\0 hack)
+               (setf A_left_0 (- A_left_0 1)))
+        (format hack "~A" A_res)
+        (write-char newl hack)
+;        (close hack))
+        )
+;___________________________________________
+;-------------------------------------------
+
+;; C instruction,[destination=comp;jump]
+(defun deal_C_ins (C_ins)
+       (setf eq_position (find_eq C_ins))
+       (setf semi_position (find_semi C_ins))
+
+       (if (and (> eq_position 0) (> semi_position 0))
+           (C1 eq_position semi_position C_ins)
+           (if (> eq_position 0)
+               (C2 eq_position C_ins)
+               (C3 semi_position C_ins))))
+;__________________________________________
+;------------------------------------------
+   
+
 ;; Here to make the *.asm clean (without no-need-blank-or-newlines)
 ;;
 (setf newl #\Newline)
@@ -16,10 +216,10 @@
        (if (setf n (read-char sour nil)) 
            (if (eq n newl) 
                 (rm_newl sour)
-                (wr_char n)))) 
+                (wr_char n))))
 
-(setf source (open "/home/nester/source.asm"))
-(setf source_no_empty (open "/home/nester/source_no_empty.asm":direction :output))
+(setf source (open "/home/hack/source.asm"))
+(setf source_no_empty (open "/home/hack/source_no_empty.asm":direction :output))
 
 (loop while (setf a_char (read-char source nil)) do
       (if (eq (eq a_char empty) nil)
@@ -29,8 +229,8 @@
 (close source) (close source_no_empty)
           
 
-(setf source_no_empty (open "/home/nester/source_no_empty.asm"))
-(setf source_final (open "/home/nester/source_final.asm":direction :output))
+(setf source_no_empty (open "/home/hack/source_no_empty.asm"))
+(setf source_final (open "/home/hack/source_final.asm":direction :output))
 
 
 (loop while (setf a_char (read-char source_no_empty nil)) do
@@ -39,51 +239,21 @@
           (write-char a_char source_final)))         
 
 
-(close source) (close source_no_empty)
+(close source_no_empty) (close source_final)
 
-;; Done
-;; ____________________________________________________________________
+;_________________________________________________________________
+;-----------------------------------------------------------------
 
+;; Next, figure out which kind of instruction it is.
+;; A instructions or C instructions,translate it into 110100100100...
+(setf source_final (open "/home/hack/source_final.asm"))
 
-;; Next,find out if all line wrote in good Hack-asm-grammer.
-
-;(setf OK T) ; good to be TRANSLATE,otherwise NIL (exit)
-(setf source_final (open "/home/nester/source_final.asm"))
-(setf line_num -1)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun map_A_command (l)
-       (if (eq (char l 1) #\1)
-            
-;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun map_tab_command (l)
-;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun trans_A_command (l)
-;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun trans_tab_command (l)
-;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun trans_C_command (l)
-;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(loop while (setf a_Line (read-line source_final nil)) do  ;have a line
-
-            (setf line_num (+ line_num 1))
-
-            (if (eq (char a_Line 1) @) 
-                (map_A_command a_Line)                   ;To map the XXXX to address
-                (if (eq (char a_Line 1) #\( )            ;Same thing 
-                    (map_tab_command a_Line)))))
-               
-;; Done
-;;______________________________________________________________________
-
-(loop while (set a_Line (read-line source_final nil)) do
-            (if (eq (char a_Line 1) @)
-                (trans_A_commmand a_Line)
-                (if (eq (char a_Line 1) #\( )
-                    (tans_tab_command a_Line)
-                    (tans_C_command a_Line))))                               
-;;
-;;Done
-
+(loop while (setf a_line (read-line source_final nil)) do
+      (if (eq (char a_line 0) #\@)
+          (deal_A_ins a_line)
+          (deal_C_ins a_line)))
+(close source_final)
+(close hack)
+;;***********************************************************              
+;;END
 
