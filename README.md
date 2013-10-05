@@ -44,6 +44,8 @@ Useage
 
 7.then you get hack file in /home/hack/hack.
 
+8. if you find NIL in hack file,you may typed the wrong asm code.
+
 
 For more infomations, please see the excellent book <The Elements of Computing Systems>
 
