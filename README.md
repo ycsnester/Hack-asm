@@ -35,7 +35,6 @@ Useage
 3.no symbol is allowed to mark address (sorry).
 
 
-
 4.build /home/hack Directory
 
 5.write down your code in /home/hack/source.asm.
@@ -43,9 +42,7 @@ Useage
 6.run clisp *path*/asm_compiler.lisp.
 
 7.then you get hack file in /home/hack/hack.
-
-8. if you find NIL in hack file,you may typed the wrong asm code.
-
+8.if you find NIL in hack file,you may typed the wrong asm code.
 For more infomations, 
 
 please see the excellent book <The Elements of Computing Systems>
